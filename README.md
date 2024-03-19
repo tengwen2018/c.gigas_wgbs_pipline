@@ -13,3 +13,13 @@ samtools index bsmap.sample.bam && \
 pefilter -i bsmap.sample.bam -o bsmap.sample.filter.bam > pefilter.sample.log && \
 mcall -m bsmap.sample.filter.bam -p 6 -r ref.fa --sampleName sample > mcall.sample.log
 ```
+
+**3. Differential methylation analysis**
+
+```bash
+# Male VS. female in parent cohort
+mcomp -d 5 -r p8m.G.bed,p10m.G.bed -r p8f.G.bed,p10f.G.bed -m male.G.bed -m female.G.bed -p 10 -c mcomp.pmale.vs.pfemale.txt —withVariance 0
+
+# Male VS. female in offspring cohort
+mcomp -d 5 -r o10d_1.G.bed,o10d_3.G.bed,o8d_1.G.bed,o8d_3.G.bed -r o10t_1.G.bed,o10t_2.G.bed,o10t_3.G.bed,o8t_1.G.bed,o8t_2.G.bed,o8t_3.G.bed,o8d_2.G.bed,o10d_2.G.bed -m male.G.bed -m female.G.bed -p 10 -c mcomp.omale.vs.ofemale.txt —withVariance 0
+```
