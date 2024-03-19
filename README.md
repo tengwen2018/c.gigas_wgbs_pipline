@@ -41,6 +41,7 @@ plotProfile -m matrix2_gene.gz \
 
 ```R
 library(plyr)
+
 o10d_1 <- read.table('o10d_1.G.bed',sep='\t',header=F)
 o10d_1 <- o10d_1[c('V1','V2','V3','V4','V5')]
 o10d_1 <- o10d_1[o10d_1$V5>=5,]
