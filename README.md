@@ -1,4 +1,4 @@
-**The pipline of DNA methylaiton data analysis of *Crassostrea gigas***
+![image](https://github.com/tengwen2018/c.gigas_wgbs_pipline/assets/115065520/2eb700d8-409d-4282-8e7b-398dc03970d4)**The pipline of DNA methylaiton data analysis of *Crassostrea gigas***
 
 **1. Data trimming of Illumina 150bp PE reads**
 
@@ -43,7 +43,51 @@ plotProfile -m matrix2_gene.gz \
 bseqc2 -i bsmap.sample.bam -o bseqc2.sample.txt -r ref.fa -l 140
 ```
 
-**6. PCA analysis**
+**6. DNA methylation levels in variant genomic features**
+
+```bash
+for e in `cat sample.list`
+do
+for g in `cat genomic_feature.list`
+do
+bedtools intersect -a bsmap.$e.filter.bam.G.bed -b $g.bed -wa | cut -f 1-5 > $g.G.bed && \
+Rscript --vanilla summary.R $g.G.bed
+done
+done
+```
+```R
+# summary.R
+args = commandArgs(trailingOnly=TRUE)
+
+df <- read.table(args[1],header=F)
+df <- df[df$V5>=5,]
+summary(df$V4)
+```
+```R
+# Heat map visualization of DNA methylation levels in variant genomic fetures
+library(ComplexHeatmap)
+library(circlize)
+
+df <- read.table("structure.G.txt",header=T,row.names=1)
+df_scaled <- t(scale(t(df)))
+col_fun = colorRamp2(c(-2, 0, 2), c("#1f78b4", "white", "#e31a1c"))
+pdf("gene_structure_heatmap.pdf")
+Heatmap(df_scaled, 
+ col = col_fun,
+ cluster_columns = T,
+ cluster_rows = FALSE,
+ row_order = c("g1stExon", "gExon", "gGene", "gIntron", "rLow_complexity", "gProm", "rLINE", "rRC_Helitron", "CGI_shore", "rLTR", "rDNA", "rSimple_repeat", "rSINE", "CGI"),
+ column_order = c("p10m","o10d_1","o10d_3","o8d_1","o8d_3","p8m","p10f","p8f","o10d_2","o10t_1","o10t_2","o10t_3","o8t_1","o8t_2","o8t_3","o8d_2"),
+ heatmap_legend_param=list(title = "row Z-score of mean mCG/CG"),
+ width = ncol(df_scaled)*unit(5, "mm"), 
+ height = nrow(df_scaled)*unit(5, "mm"),
+ column_names_rot = 45
+ )
+dev.off()
+
+```
+
+**7. PCA analysis**
 
 ```R
 library(plyr)
