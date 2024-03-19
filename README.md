@@ -134,6 +134,7 @@ write.table(res, 'offspring.methy.5x.txt', quote=F, sep='\t', col.names=T, row.n
 
 library("factoextra")
 library("FactoMineR")
+
 res.pca <- PCA(t(res[,2:13]), graph=FALSE)
 print(res.pca)
 pdf("offspring.methy.5x.eigenvalue.pdf")
