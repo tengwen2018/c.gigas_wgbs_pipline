@@ -1,4 +1,4 @@
-c.gigas_wgbs_pipline
+**The pipline of DNA methylaiton data analysis of *Crassostrea gigas***
 
 **1. Data trimming of Illumina 150bp PE reads**
 
