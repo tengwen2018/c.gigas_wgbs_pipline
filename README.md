@@ -23,3 +23,18 @@ mcomp -d 5 -r p8m.G.bed,p10m.G.bed -r p8f.G.bed,p10f.G.bed -m male.G.bed -m fema
 # Male VS. female in offspring cohort
 mcomp -d 5 -r o10d_1.G.bed,o10d_3.G.bed,o8d_1.G.bed,o8d_3.G.bed -r o10t_1.G.bed,o10t_2.G.bed,o10t_3.G.bed,o8t_1.G.bed,o8t_2.G.bed,o8t_3.G.bed,o8d_2.G.bed,o10d_2.G.bed -m male.G.bed -m female.G.bed -p 10 -c mcomp.omale.vs.ofemale.txt —withVariance 0
 ```
+**Curve plot of DNA methylation profile around gene bodies**
+
+```bash
+computeMatrix scale-regions -R gene.bed -S sample.bw -b 5000 -a 5000 --regionBodyLength 10000 --binSize 100 --startLabel "TSS" --endLabel "TTS" --skipZeros --samplesLabel c.gigas -o matrix2_gene.gz --outFileNameMatrix matrix2_gene.tab --outFileSortedRegions matrix2_gene.bed && \
+plotProfile -m matrix2_gene.gz \
+      -out matrix2_cgigas.pdf \
+      --startLabel "TSS" \
+      --endLabel "TTS" \
+      --perGroup \
+      --yMin 0 \
+      --yMax 1 \
+      --outFileNameData matrix2_gene.txt
+```
+
+
