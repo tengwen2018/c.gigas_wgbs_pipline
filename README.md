@@ -408,3 +408,55 @@ draw(ht)
 dev.off()
 ```
 
+**9. Upset plots**
+
+```bash
+ln -s ../../p8vsp10/dmc_M2_p8.G.bed_vs_p10.G.bed.txt ./
+ln -s ../../o8vso10/dmc_M2_o8.G.bed_vs_o10.G.bed.txt  ./
+
+grep -E "^#|strongHyper" dmc_M2_p8.G.bed_vs_p10.G.bed.txt | sed 's/^#//' > dmc_M2_p8.G.bed_vs_p10.G.bed.stronghyper
+grep -E "^#|strongHypo" dmc_M2_p8.G.bed_vs_p10.G.bed.txt | sed 's/^#//' > dmc_M2_p8.G.bed_vs_p10.G.bed.stronghypo
+grep -E "^#|strongHyper" dmc_M2_o8.G.bed_vs_o10.G.bed.txt | sed 's/^#//' > dmc_M2_o8.G.bed_vs_o10.G.bed.stronghyper
+grep -E "^#|strongHypo" dmc_M2_o8.G.bed_vs_o10.G.bed.txt | sed 's/^#//' > dmc_M2_o8.G.bed_vs_o10.G.bed.stronghypo
+
+Rscript --vanilla upset.R dmc_M2_p8.G.bed_vs_p10.G.bed.stronghypo dmc_M2_o8.G.bed_vs_o10.G.bed.stronghypo p8_vs_p10 o8_vs_o10 upset_hypo
+Rscript --vanilla upset.R dmc_M2_p8.G.bed_vs_p10.G.bed.stronghyper dmc_M2_o8.G.bed_vs_o10.G.bed.stronghyper p8_vs_p10 o8_vs_o10 upset_hyper
+```
+```R
+# upset.R
+
+library(plyr)
+library(UpSetR)
+
+args = commandArgs(trailingOnly=TRUE)
+assign(args[3], read.table(args[1], sep="\t", header=T))
+assign(args[3], mutate(get(args[3]), pos=paste(chrom, start, end, sep="_")))
+assign(args[3], data.frame(pos=get(args[3])$pos, name=rep(1,nrow(get(args[3])))))
+x = get(args[3])
+names(x)[2] <- args[3]
+
+assign(args[4], read.table(args[2], sep="\t", header=T))
+assign(args[4], mutate(get(args[4]), pos=paste(chrom, start, end, sep="_")))
+assign(args[4], data.frame(pos=get(args[4])$pos, name=rep(1,nrow(get(args[4])))))
+y = get(args[4])
+names(y)[2] <- args[4]
+
+res <- merge(x, y, by="pos", all=TRUE)
+res[is.na(res)] = 0
+
+write.table(res, paste(args[5], "2.txt", sep="."), quote=F, sep="\t", col.names=T, row.names=F)
+
+pdf(paste(args[5], "2.pdf", sep="."),width=8,height=4)
+upset(res, nsets=40, nintersects = 40, point.size = 2.5, line.size = 1, show.number="yes", mainbar.y.label = "intersection size", sets.x.label = "set size", sets.bar.color = "steelblue1",
+ text.scale = c(2, 2, 2,1, 2, 2),
+ queries = list(
+  list(
+    query = intersects,
+    params = list(args[3], args[4]),
+    color = "#Df5286",
+    active = T
+  )
+ )
+)
+dev.off()
+```
