@@ -1,4 +1,4 @@
-# c.gigas_wgbs_pipline
+c.gigas_wgbs_pipline
 
 **1. Data trimming of Illumina 150bp PE reads**
 
@@ -37,7 +37,13 @@ plotProfile -m matrix2_gene.gz \
       --outFileNameData matrix2_gene.txt
 ```
 
-**5. PCA analysis**
+**5. The correlation between estimated DNA methylation levels and sequencing depth, as well as the relationship between the coverage of CpG sites and sequencing depth**
+
+```bash
+bseqc2 -i bsmap.sample.bam -o bseqc2.sample.txt -r ref.fa -l 140
+```
+
+**6. PCA analysis**
 
 ```R
 library(plyr)
