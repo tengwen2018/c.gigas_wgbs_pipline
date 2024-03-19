@@ -1,4 +1,4 @@
-![image](https://github.com/tengwen2018/c.gigas_wgbs_pipline/assets/115065520/2eb700d8-409d-4282-8e7b-398dc03970d4)**The pipline of DNA methylaiton data analysis of *Crassostrea gigas***
+**The pipline of DNA methylaiton data analysis of *Crassostrea gigas***
 
 **1. Data trimming of Illumina 150bp PE reads**
 
@@ -266,6 +266,145 @@ ggplot(ind_coord, aes(x=Dim.1, y=Dim.2, label=rownames(ind_coord), shape=group, 
 dev.off()
 ```
 
+**8. The heatmap represents the Pearson correlation coefficients from pairwise comparisons of common CpG methylation levels among all samples**
 
+```R
+library(plyr)
 
+o10d_1 <- read.table("o10d_1.G.bed", sep="\t", header=F)
+o10d_1 <- o10d_1[o10d_1$V5>=5,]
+o10d_1 <- o10d_1[c("V1","V2","V3","V4")]
+colnames(o10d_1) <- c("chrom", "start", "end", "o10d_1")
+o10d_1 <- mutate(o10d_1, pos=paste(chrom, start, end, sep="_"))
+o10d_1 <- o10d_1[c("pos", "o10d_1")]
+
+o10d_2 <- read.table("o10d_2.G.bed", sep="\t", header=F)
+o10d_2 <- o10d_2[o10d_2$V5>=5,]
+o10d_2 <- o10d_2[c("V1","V2","V3","V4")]
+colnames(o10d_2) <- c("chrom", "start", "end", "o10d_2")
+o10d_2 <- mutate(o10d_2, pos=paste(chrom, start, end, sep="_"))
+o10d_2 <- o10d_2[c("pos", "o10d_2")]
+
+o10d_3 <- read.table("o10d_3.G.bed", sep="\t", header=F)
+o10d_3 <- o10d_3[o10d_3$V5>=5,]
+o10d_3 <- o10d_3[c("V1","V2","V3","V4")]
+colnames(o10d_3) <- c("chrom", "start", "end", "o10d_3")
+o10d_3 <- mutate(o10d_3, pos=paste(chrom, start, end, sep="_"))
+o10d_3 <- o10d_3[c("pos", "o10d_3")]
+
+o10t_1 <- read.table("o10t_1.G.bed", sep="\t", header=F)
+o10t_1 <- o10t_1[o10t_1$V5>=5,]
+o10t_1 <- o10t_1[c("V1","V2","V3","V4")]
+colnames(o10t_1) <- c("chrom", "start", "end", "o10t_1")
+o10t_1 <- mutate(o10t_1, pos=paste(chrom, start, end, sep="_"))
+o10t_1 <- o10t_1[c("pos", "o10t_1")]
+
+o10t_2 <- read.table("o10t_2.G.bed", sep="\t", header=F)
+o10t_2 <- o10t_2[o10t_2$V5>=5,]
+o10t_2 <- o10t_2[c("V1","V2","V3","V4")]
+colnames(o10t_2) <- c("chrom", "start", "end", "o10t_2")
+o10t_2 <- mutate(o10t_2, pos=paste(chrom, start, end, sep="_"))
+o10t_2 <- o10t_2[c("pos", "o10t_2")]
+
+o10t_3 <- read.table("o10t_3.G.bed", sep="\t", header=F)
+o10t_3 <- o10t_3[o10t_3$V5>=5,]
+o10t_3 <- o10t_3[c("V1","V2","V3","V4")]
+colnames(o10t_3) <- c("chrom", "start", "end", "o10t_3")
+o10t_3 <- mutate(o10t_3, pos=paste(chrom, start, end, sep="_"))
+o10t_3 <- o10t_3[c("pos", "o10t_3")]
+
+o8d_1 <- read.table("o8d_1.G.bed", sep="\t", header=F)
+o8d_1 <- o8d_1[o8d_1$V5>=5,]
+o8d_1 <- o8d_1[c("V1","V2","V3","V4")]
+colnames(o8d_1) <- c("chrom", "start", "end", "o8d_1")
+o8d_1 <- mutate(o8d_1, pos=paste(chrom, start, end, sep="_"))
+o8d_1 <- o8d_1[c("pos", "o8d_1")]
+
+o8d_2 <- read.table("o8d_2.G.bed", sep="\t", header=F)
+o8d_2 <- o8d_2[o8d_2$V5>=5,]
+o8d_2 <- o8d_2[c("V1","V2","V3","V4")]
+colnames(o8d_2) <- c("chrom", "start", "end", "o8d_2")
+o8d_2 <- mutate(o8d_2, pos=paste(chrom, start, end, sep="_"))
+o8d_2 <- o8d_2[c("pos", "o8d_2")]
+
+o8d_3 <- read.table("o8d_3.G.bed", sep="\t", header=F)
+o8d_3 <- o8d_3[o8d_3$V5>=5,]
+o8d_3 <- o8d_3[c("V1","V2","V3","V4")]
+colnames(o8d_3) <- c("chrom", "start", "end", "o8d_3")
+o8d_3 <- mutate(o8d_3, pos=paste(chrom, start, end, sep="_"))
+o8d_3 <- o8d_3[c("pos", "o8d_3")]
+
+o8t_1 <- read.table("o8t_1.G.bed", sep="\t", header=F)
+o8t_1 <- o8t_1[o8t_1$V5>=5,]
+o8t_1 <- o8t_1[c("V1","V2","V3","V4")]
+colnames(o8t_1) <- c("chrom", "start", "end", "o8t_1")
+o8t_1 <- mutate(o8t_1, pos=paste(chrom, start, end, sep="_"))
+o8t_1 <- o8t_1[c("pos", "o8t_1")]
+
+o8t_2 <- read.table("o8t_2.G.bed", sep="\t", header=F)
+o8t_2 <- o8t_2[o8t_2$V5>=5,]
+o8t_2 <- o8t_2[c("V1","V2","V3","V4")]
+colnames(o8t_2) <- c("chrom", "start", "end", "o8t_2")
+o8t_2 <- mutate(o8t_2, pos=paste(chrom, start, end, sep="_"))
+o8t_2 <- o8t_2[c("pos", "o8t_2")]
+
+o8t_3 <- read.table("o8t_3.G.bed", sep="\t", header=F)
+o8t_3 <- o8t_3[o8t_3$V5>=5,]
+o8t_3 <- o8t_3[c("V1","V2","V3","V4")]
+colnames(o8t_3) <- c("chrom", "start", "end", "o8t_3")
+o8t_3 <- mutate(o8t_3, pos=paste(chrom, start, end, sep="_"))
+o8t_3 <- o8t_3[c("pos", "o8t_3")]
+
+p10m <- read.table("p10m.G.bed", sep="\t", header=F)
+p10m <- p10m[p10m$V5>=5,]
+p10m <- p10m[c("V1","V2","V3","V4")]
+colnames(p10m) <- c("chrom", "start", "end", "p10m")
+p10m <- mutate(p10m, pos=paste(chrom, start, end, sep="_"))
+p10m <- p10m[c("pos", "p10m")]
+
+p10f <- read.table("p10f.G.bed", sep="\t", header=F)
+p10f <- p10f[p10f$V5>=5,]
+p10f <- p10f[c("V1","V2","V3","V4")]
+colnames(p10f) <- c("chrom", "start", "end", "p10f")
+p10f <- mutate(p10f, pos=paste(chrom, start, end, sep="_"))
+p10f <- p10f[c("pos", "p10f")]
+
+p8m <- read.table("p8m.G.bed", sep="\t", header=F)
+p8m <- p8m[p8m$V5>=5,]
+p8m <- p8m[c("V1","V2","V3","V4")]
+colnames(p8m) <- c("chrom", "start", "end", "p8m")
+p8m <- mutate(p8m, pos=paste(chrom, start, end, sep="_"))
+p8m <- p8m[c("pos", "p8m")]
+
+p8f <- read.table("p8f.G.bed", sep="\t", header=F)
+p8f <- p8f[p8f$V5>=5,]
+p8f <- p8f[c("V1","V2","V3","V4")]
+colnames(p8f) <- c("chrom", "start", "end", "p8f")
+p8f <- mutate(p8f, pos=paste(chrom, start, end, sep="_"))
+p8f <- p8f[c("pos", "p8f")]
+
+res <- o10d_1
+for (sample in list(o10d_2, o10d_3, o10t_1, o10t_2, o10t_3, o8d_1, o8d_2, o8d_3, o8t_1, o8t_2, o8t_3, p10m, p10f, p8m, p8f)){res <- merge(res, sample, by='pos', all=F)}
+write.table(res, 'merged.G.txt', quote=F, sep='\t', col.names=T, row.names=F)
+res <- res[c("o10d_1", "o10d_2", "o10d_3", "o10t_1", "o10t_2", "o10t_3", "o8d_1", "o8d_2", "o8d_3", "o8t_1", "o8t_2", "o8t_3", "p10m", "p10f", "p8m", "p8f")]
+res <- as.matrix(res)
+res <- cor(res)
+
+library(ComplexHeatmap)
+library(circlize)
+
+pdf("cor_methy.pdf")
+col_fun = colorRamp2(c(0.8, 0.9, 1), c("#1f78b4", "white", "#e31a1c"))
+ht = Heatmap(res, name="cor",
+col = col_fun,
+cluster_rows = TRUE,
+cluster_columns = TRUE,
+row_names_gp = gpar(fontsize = 15),
+column_names_gp = gpar(fontsize = 15),
+cell_fun = function(j, i, x, y, width, height, fill) {
+grid.text(sprintf("%.2f", res[i, j]), x, y, gp = gpar(fontsize = 10))
+})
+draw(ht)
+dev.off()
+```
 
