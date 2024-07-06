@@ -1,4 +1,4 @@
-**The pipline of DNA methylaiton data analysis of *Crassostrea gigas***
+![image](https://github.com/tengwen2018/c.gigas_wgbs_pipline/assets/115065520/92fb29a4-b92f-482d-b19a-4964b274d352)**The pipline of DNA methylaiton data analysis of *Crassostrea gigas***
 
 **1. Data trimming of Illumina 150bp PE reads**
 
@@ -43,6 +43,12 @@ mcomp -d 5 -r o10d_1.G.bed,o10d_3.G.bed,o8d_1.G.bed,o8d_3.G.bed\
  -r o10t_1.G.bed,o10t_2.G.bed,o10t_3.G.bed,o8t_1.G.bed,o8t_2.G.bed,o8t_3.G.bed,o8d_2.G.bed,o10d_2.G.bed\
  -m male.G.bed -m female.G.bed -p 10\
  -c mcomp.omale.vs.ofemale.txt —withVariance 0
+
+mcomp -d 5 -r p8m.G.bed -r p8f.G.bed\
+ -p 10 -c p8m.vs.p8f.txt —withVariance 0
+
+mcomp -d 5 -r p10m.G.bed -r p10f.G.bed\
+ -p 10 -c p10m.vs.p10f.txt —withVariance 0
 ```
 **4. Curve plot of DNA methylation profile around gene bodies**
 
@@ -494,3 +500,212 @@ upset(res, nsets=40, nintersects = 40, point.size = 2.5, line.size = 1, show.num
 )
 dev.off()
 ```
+
+**10. Offspring inheriting DNA methylation states from both maternal and paternal sources**
+**Family 8**
+```bash
+# Hyper methylated in P8f
+awk -F'\t' 'BEGIN{OFS="\t"}{if($NF=="strongHyper")print $1,$2,$3}' dmr_M2_male.G.bed_vs_female.G.bed.txt > dmrhyper.bed
+bedtools intersect -v -a dmrhyper.bed -b malevsfemale/dmrhyper.bed > dmrhyper2.bed # To exclude the impact of sex
+bedtools intersect -a dmrhyper2.bed -b p8m.G.bed -wa -wb > p8m_dmrhyper2.txt
+bedtools intersect -a dmrhyper2.bed -b p8f.G.bed -wa -wb > p8f_dmrhyper2.txt
+for i in `seq 1 3`
+do
+bedtools intersect -a dmrhyper2.bed -b o8d$i.G.bed -wa -wb > o8d${i}_dmrhyper2.txt
+bedtools intersect -a dmrhyper2.bed -b o8t$i.G.bed -wa -wb > o8t${i}_dmrhyper2.txt
+done
+
+# Hypo methylated in P8f
+awk -F'\t' 'BEGIN{OFS="\t"}{if($NF=="strongHypo")print $1,$2,$3}' dmr_M2_male.G.bed_vs_female.G.bed.txt > dmrhypo.bed
+bedtools intersect -v -a dmrhypo.bed -b malevsfemale/dmrhypo.bed > dmrhypo2.bed # To exclude the impact of sex
+bedtools intersect -a dmrhypo2.bed -b p8m.G.bed -wa -wb > p8m_dmrhypo2.txt
+bedtools intersect -a dmrhypo2.bed -b p8f.G.bed -wa -wb > p8f_dmrhypo2.txt
+for i in `seq 1 3`
+do
+bedtools intersect -a dmrhypo2.bed -b o8d$i.G.bed -wa -wb > o8d${i}_dmrhypo2.txt
+bedtools intersect -a dmrhypo2.bed -b o8t$i.G.bed -wa -wb > o8t${i}_dmrhypo2.txt
+done
+
+# No significant changes between P8f and P8m
+awk -F'\t' 'BEGIN{OFS="\t"}{if($NF~"strongH")print $1,$2,$3}' dmr_M2_p8m.G.bed_vs_p8f.G.bed.txt > dmr.bed
+bedtools intersect -v -a f8.G.txt -b dmr.bed -wa > f8.outof.dmr.txt
+```
+```R
+library(ggplot2)
+
+# Hyper methylated in P8f
+p8m <- read.table("p8m_dmrhyper2.txt", header=F)
+p8f <- read.table("p8f_dmrhyper2.txt", header=F)
+o8d1 <- read.table("o8d1_dmrhyper2.txt", header=F)
+o8d2 <- read.table("o8d2_dmrhyper2.txt", header=F)
+o8d3 <- read.table("o8d3_dmrhyper2.txt", header=F)
+o8t1 <- read.table("o8t1_dmrhyper2.txt", header=F)
+o8t2 <- read.table("o8t2_dmrhyper2.txt", header=F)
+o8t3 <- read.table("o8t3_dmrhyper2.txt", header=F)
+
+df <- data.frame(
+ methy=c(
+  mean(p8m$V7), mean(p8f$V7), mean(o8d1$V7), mean(o8d2$V7), mean(o8d3$V7), mean(o8t1$V7), mean(o8t2$V7), mean(o8t3$V7)
+ ), 
+ group=c("p8m", "p8f", "o8d1", "o8d2", "o8d3", "o8t1", "o8t2", "o8t3")
+)
+
+bp <- ggplot(df, aes(x=factor(group, level=c("p8f", "o8d1", "o8d2", "o8d3","o8t1", "o8t2", "o8t3", "p8m")), y=methy, fill=group)) + 
+ geom_bar(stat="identity")
+
+pdf("f8.dmrhyper2.pdf", width=3,height=3)
+
+bp + 
+ scale_fill_manual(values=c("#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#D45400", "#84A3B3")) + 
+ labs(title="Hyper-DMR",x="", y = "Methylation level") + 
+ theme_minimal() + 
+ ylim(0, 1) +
+ theme(legend.position = "none", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+dev.off()
+
+# Hypo methylated in P8f
+p8m <- read.table("p8m_dmrhypo2.txt", header=F)
+p8f <- read.table("p8f_dmrhypo2.txt", header=F)
+o8d1 <- read.table("o8d1_dmrhypo2.txt", header=F)
+o8d2 <- read.table("o8d2_dmrhypo2.txt", header=F)
+o8d3 <- read.table("o8d3_dmrhypo2.txt", header=F)
+o8t1 <- read.table("o8t1_dmrhypo2.txt", header=F)
+o8t2 <- read.table("o8t2_dmrhypo2.txt", header=F)
+o8t3 <- read.table("o8t3_dmrhypo2.txt", header=F)
+
+df <- data.frame(
+ methy=c(
+  mean(p8m$V7), mean(p8f$V7), mean(o8d1$V7), mean(o8d2$V7), mean(o8d3$V7), mean(o8t1$V7), mean(o8t2$V7), mean(o8t3$V7)
+ ), 
+ group=c("p8m", "p8f", "o8d1", "o8d2", "o8d3", "o8t1", "o8t2", "o8t3")
+)
+
+bp <- ggplot(df, aes(x=factor(group, level=c("p8f", "o8d1", "o8d2", "o8d3","o8t1", "o8t2", "o8t3", "p8m")), y=methy, fill=group)) + 
+ geom_bar(stat="identity")
+
+pdf("dmrhypo2.pdf", width=3,height=3)
+
+bp + 
+ scale_fill_manual(values=c("#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#D45400", "#84A3B3")) + 
+ labs(title="hypo2-DMR",x="", y = "Methylation level") + 
+ theme_minimal() + 
+ theme(legend.position = "none", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+dev.off()
+
+# No significant changes between P8f and P8m
+df <- read.table("f8.outof.dmr.txt", header=F)
+colnames(df) <- c("chr", "start", "end", "o8d1", "o8d2", "o8d3", "o8t1", "o8t2", "o8t3", "p8m", "p8f")
+
+res <- data.frame(
+ methy=c(
+  mean(df$o8d1), mean(df$o8d2), mean(df$o8d3), mean(df$o8t1), mean(df$o8t2), mean(df$o8t3), mean(df$p8m), mean(df$p8f)
+ ), 
+ group=c("o8d1", "o8d2", "o8d3", "o8t1", "o8t2", "o8t3", "p8m", "p8f")
+)
+
+bp <- ggplot(res, aes(x=factor(group, level=c("p8f", "o8d1", "o8d2", "o8d3","o8t1", "o8t2", "o8t3", "p8m")), y=methy, fill=group)) + 
+ geom_bar(stat="identity")
+
+pdf("f8.dmr.pdf", width=3,height=3)
+
+bp + 
+ scale_fill_manual(values=c("#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#D45400", "#84A3B3")) + 
+ labs(title="Hyper-DMR",x="", y = "Methylation level") + 
+ theme_minimal() + 
+ ylim(0,1) +
+ theme(legend.position = "none", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+dev.off()
+```
+**Family 10**
+```bash
+#Hyper methylated in P10f
+bedtools intersect -v -a dmrhyper.bed -b malevsfemale/dmrhyper.bed > dmrhyper2.bed # To exclude the impact of sex
+bedtools intersect -a dmrhyper2.bed -b p10m.G.bed -wa -wb > p10m_dmrhyper2.txt 
+bedtools intersect -a dmrhyper2.bed -b p10f.G.bed -wa -wb > p10f_dmrhyper2.txt 
+for i in `seq 1 3`
+do
+bedtools intersect -a dmrhyper2.bed -b o10d$i.G.bed -wa -wb > o10d${i}_dmrhyper2.txt
+bedtools intersect -a dmrhyper2.bed -b o10t$i.G.bed -wa -wb > o10t${i}_dmrhyper2.txt
+done
+
+#Hypo methylated in P10f
+bedtools intersect -v -a dmrhypo.bed -b malevsfemale/dmrhypo.bed > dmrhypo2.bed # To exclude the impact of sex
+bedtools intersect -a dmrhypo2.bed -b p10m.G.bed -wa -wb > p10m_dmrhypo2.txt 
+bedtools intersect -a dmrhypo2.bed -b p10f.G.bed -wa -wb > p10f_dmrhypo2.txt 
+for i in `seq 1 3`
+do
+bedtools intersect -a dmrhypo2.bed -b o10d$i.G.bed -wa -wb > o10d${i}_dmrhypo2.txt
+bedtools intersect -a dmrhypo2.bed -b o10t$i.G.bed -wa -wb > o10t${i}_dmrhypo2.txt
+done
+
+# No significant changes between P10f and P10m
+awk -F'\t' 'BEGIN{OFS="\t"}{if($NF~"strongH")print $1,$2,$3}' dmr_M2_p10m.G.bed_vs_p10f.G.bed.txt > dmr.bed
+bedtools intersect -v -a f10.G.txt -b dmr.bed -wa > f10.outof.dmr.txt
+```
+```R
+library(ggplot2)
+
+p10m <- read.table("p10m_dmrhyper2.txt", header=F)
+p10f <- read.table("p10f_dmrhyper2.txt", header=F)
+o10d1 <- read.table("o10d1_dmrhyper2.txt", header=F)
+o10d2 <- read.table("o10d2_dmrhyper2.txt", header=F)
+o10d3 <- read.table("o10d3_dmrhyper2.txt", header=F)
+o10t1 <- read.table("o10t1_dmrhyper2.txt", header=F)
+o10t2 <- read.table("o10t2_dmrhyper2.txt", header=F)
+o10t3 <- read.table("o10t3_dmrhyper2.txt", header=F)
+
+df <- data.frame(
+ methy=c(
+  mean(p10m$V7), mean(p10f$V7), mean(o10d1$V7), mean(o10d2$V7), mean(o10d3$V7), mean(o10t1$V7), mean(o10t2$V7), mean(o10t3$V7)
+ ), 
+ group=c("p10m", "p10f", "o10d1", "o10d2", "o10d3", "o10t1", "o10t2", "o10t3")
+)
+
+bp <- ggplot(df, aes(x=factor(group, level=c("p10f", "o10d1", "o10d2", "o10d3", "o10t1", "o10t2", "o10t3", "p10m")), y=methy, fill=group)) + 
+ geom_bar(stat="identity")
+
+pdf("f10.dmrhyper2.pdf", width=3,height=3)
+
+bp + 
+ scale_fill_manual(values=c("#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#D45400", "#84A3B3")) + 
+ labs(title="Hyper-DMR",x="", y = "Methylation level") + 
+ theme_minimal() + 
+ ylim(0, 1) +
+ theme(legend.position = "none", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+dev.off()
+
+p10m <- read.table("p10m_dmrhypo2.txt", header=F)
+p10f <- read.table("p10f_dmrhypo2.txt", header=F)
+o10d1 <- read.table("o10d1_dmrhypo2.txt", header=F)
+o10d2 <- read.table("o10d2_dmrhypo2.txt", header=F)
+o10d3 <- read.table("o10d3_dmrhypo2.txt", header=F)
+o10t1 <- read.table("o10t1_dmrhypo2.txt", header=F)
+o10t2 <- read.table("o10t2_dmrhypo2.txt", header=F)
+o10t3 <- read.table("o10t3_dmrhypo2.txt", header=F)
+
+df <- data.frame(
+ methy=c(
+  mean(p10m$V7), mean(p10f$V7), mean(o10d1$V7), mean(o10d2$V7), mean(o10d3$V7), mean(o10t1$V7), mean(o10t2$V7), mean(o10t3$V7)
+ ), 
+ group=c("p10m", "p10f", "o10d1", "o10d2", "o10d3", "o10t1", "o10t2", "o10t3")
+)
+
+bp <- ggplot(df, aes(x=factor(group, level=c("p10f", "o10d1", "o10d2", "o10d3","o10t1", "o10t2", "o10t3", "p10m")), y=methy, fill=group)) + 
+ geom_bar(stat="identity")
+
+pdf("dmrhypo2.pdf", width=3,height=3)
+
+bp + 
+ scale_fill_manual(values=c("#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#D45400", "#84A3B3")) + 
+ labs(title="hypo2-DMR",x="", y = "Methylation level") + 
+ theme_minimal() + 
+ theme(legend.position = "none", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+dev.off()
+```
+
+
