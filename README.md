@@ -26,6 +26,7 @@ bsmap -a ${i}_clean_1.fq.gz -b ${i}_clean_2.fq.gz -d ref.fa -o bsmap.$i.bam\
 samtools index bsmap.$i.bam && \
 pefilter -i bsmap.$i.bam -o bsmap.$i.filter.bam && \
 mcall -m bsmap.$i.filter.bam -p 6 -r ref.fa --sampleName $i > mcall.log
+bedGraphToBigWig $i.G.bed ref.size $i.bw
 done
 ```
 
@@ -46,7 +47,10 @@ mcomp -d 5 -r o10d_1.G.bed,o10d_3.G.bed,o8d_1.G.bed,o8d_3.G.bed\
 **4. Curve plot of DNA methylation profile around gene bodies**
 
 ```bash
-computeMatrix scale-regions -R gene.bed -S sample.bw -b 5000 -a 5000\
+mcomp -r P8m.G.bed P8f.G.bed O8d1.G.bed O8d2.G.bed O8d3.G.bed O8t1.G.bed O8t2.G.bed O8t3.G.bed P10m.G.bed P10f.G.bed O10d1.G.bed O10d2.G.bed O10d3.G.bed O10t1.G.bed O10t2.G.bed O10t3.G.bed -m cgig.G.bed --withVariance 1 -p 4 --reference ref.fa
+bedGraphToBigWig cgig.G.bed ref.size cgig.bw
+
+computeMatrix scale-regions -R gene.bed -S cgig.bw -b 5000 -a 5000\
  --regionBodyLength 10000 --binSize 100 --startLabel "TSS" --endLabel "TTS"\
  --skipZeros --samplesLabel c.gigas -o matrix2_gene.gz\
  --outFileNameMatrix matrix2_gene.tab\
