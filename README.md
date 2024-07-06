@@ -648,7 +648,7 @@ bedtools intersect -v -a f10.G.txt -b dmr.bed -wa > f10.outof.dmr.txt
 ```
 ```R
 library(ggplot2)
-
+#Hyper methylated in P10f
 p10m <- read.table("p10m_dmrhyper2.txt", header=F)
 p10f <- read.table("p10f_dmrhyper2.txt", header=F)
 o10d1 <- read.table("o10d1_dmrhyper2.txt", header=F)
@@ -679,6 +679,7 @@ bp +
 
 dev.off()
 
+#Hypo methylated in P10f
 p10m <- read.table("p10m_dmrhypo2.txt", header=F)
 p10f <- read.table("p10f_dmrhypo2.txt", header=F)
 o10d1 <- read.table("o10d1_dmrhypo2.txt", header=F)
@@ -704,6 +705,31 @@ bp +
  scale_fill_manual(values=c("#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#D45400", "#84A3B3")) + 
  labs(title="hypo2-DMR",x="", y = "Methylation level") + 
  theme_minimal() + 
+ theme(legend.position = "none", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+dev.off()
+
+# No significant changes between P10f and P10m
+df <- read.table("f10.outof.dmr.txt", header=F)
+colnames(df) <- c("chr", "start", "end", "o10d1", "o10d2", "o10d3", "o10t1", "o10t2", "o10t3", "p10m", "p10f")
+
+res <- data.frame(
+ methy=c(
+  mean(df$o10d1), mean(df$o10d2), mean(df$o10d3), mean(df$o10t1), mean(df$o10t2), mean(df$o10t3), mean(df$p10m), mean(df$p10f)
+ ), 
+ group=c("o10d1", "o10d2", "o10d3", "o10t1", "o10t2", "o10t3", "p10m", "p10f")
+)
+
+bp <- ggplot(res, aes(x=factor(group, level=c("p10f", "o10d1", "o10d2", "o10d3","o10t1", "o10t2", "o10t3", "p10m")), y=methy, fill=group)) + 
+ geom_bar(stat="identity")
+
+pdf("f10.dmr.pdf", width=3,height=3)
+
+bp + 
+ scale_fill_manual(values=c("#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#E0AA35", "#D45400", "#84A3B3")) + 
+ labs(title="Hyper-DMR",x="", y = "Methylation level") + 
+ theme_minimal() + 
+ ylim(0,1) +
  theme(legend.position = "none", axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 
 dev.off()
