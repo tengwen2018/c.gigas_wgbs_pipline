@@ -69,7 +69,11 @@ plotProfile -m matrix2_gene.gz \
 **5. The correlation between estimated DNA methylation levels and sequencing depth, as well as the relationship between the coverage of CpG sites and sequencing depth**
 
 ```bash
-bseqc2 -i bsmap.sample.bam -o bseqc2.sample.txt -r ref.fa -l 140
+for i in P8m P8f O8d1 O8d2 O8d3 O8t1 O8t2 O8t3 P10m P10f O10d1 O10d2 O10d3 O10t1 O10t2 O10t3
+do
+mkdir bseqc2/$i && cd bseqc2/$i
+bseqc2 -i bsmap.$i.filter.bam -o bseqc2.$i.txt -r ref.fa -l 140
+done
 ```
 
 **6. DNA methylation levels in variant genomic features**
