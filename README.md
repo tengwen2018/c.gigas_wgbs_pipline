@@ -502,6 +502,7 @@ dev.off()
 ```
 
 **10. Offspring inheriting DNA methylation states from both maternal and paternal sources**
+
 **Family 8**
 ```bash
 # Hyper methylated in P8f
