@@ -622,6 +622,7 @@ dev.off()
 ```
 **Family 10**
 ```bash
+
 #Hyper methylated in P10f
 bedtools intersect -v -a dmrhyper.bed -b malevsfemale/dmrhyper.bed > dmrhyper2.bed # To exclude the impact of sex
 bedtools intersect -a dmrhyper2.bed -b p10m.G.bed -wa -wb > p10m_dmrhyper2.txt 
