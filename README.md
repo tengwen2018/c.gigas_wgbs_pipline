@@ -1,4 +1,4 @@
-![image](https://github.com/tengwen2018/c.gigas_wgbs_pipline/assets/115065520/92fb29a4-b92f-482d-b19a-4964b274d352)**The pipline of DNA methylaiton data analysis of *Crassostrea gigas***
+**The pipline of DNA methylaiton data analysis of *Crassostrea gigas***
 
 **1. Data trimming of Illumina 150bp PE reads**
 
