@@ -19,8 +19,8 @@ done
 ```bash
 for i in P8m P8f O8d1 O8d2 O8d3 O8t1 O8t2 O8t3 P10m P10f O10d1 O10d2 O10d3 O10t1 O10t2 O10t3
 do
-mkdir mapping/$i && cd mapping/$i
-ln -s ../cleandata/$i/${i}_clean_{1..2}.fq.gz ./
+mkdir bsmap/$i && cd bsmap/$i
+ln -s ../../cleandata/$i/${i}_clean_{1..2}.fq.gz ./
 bsmap -a ${i}_clean_1.fq.gz -b ${i}_clean_2.fq.gz -d ref.fa -o bsmap.$i.bam\
  -R -p 4 -n 1 -r 0 -v 0.1 -S 1 -A AGATCGGAAGAGCGGTTCAGCAGGAATGCCGAGA && \
 samtools index bsmap.$i.bam && \
@@ -79,12 +79,13 @@ done
 **6. DNA methylation levels in variant genomic features**
 
 ```bash
-for e in `cat sample.list`
+for i in P8m P8f O8d1 O8d2 O8d3 O8t1 O8t2 O8t3 P10m P10f O10d1 O10d2 O10d3 O10t1 O10t2 O10t3
 do
-for g in `cat genomic_feature.list`
+mkdir features/$i && cd features/$i
+for j in `cat ../genomic_feature.list`
 do
-bedtools intersect -a bsmap.$e.filter.bam.G.bed -b $g.bed -wa | cut -f 1-5 > $g.G.bed && \
-Rscript --vanilla summary.R $g.G.bed
+bedtools intersect -a ../../bsmap/$i/$i.G.bed -b ../$j.bed -wa | cut -f 1-5 > $j.G.bed && \
+Rscript --vanilla summary.R $j.G.bed
 done
 done
 ```
